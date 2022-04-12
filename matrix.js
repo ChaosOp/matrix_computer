@@ -16,8 +16,10 @@
 //     }
 // }
 
-
-
+let color_wrap = (text, ground, r, g, b) => `\x1b[${ground};2;${r};${g};${b}m${text}\x1b[0m`;
+let fg_wrap = (text) => color_wrap(text, 38, 246, 201, 255);
+let bg_wrap_1 = (text) => color_wrap(text, 48, 111, 79, 117);
+let bg_wrap_2 = (text) => color_wrap(text, 48, 101, 43, 112);
 class Matrix {
 
     /**
@@ -36,27 +38,40 @@ class Matrix {
     /**
      * @param {boolean} output 
      * @param {array<Matrix>} repeats
+     * @param {number} use_operate (multiple constant to line), (multiple line & add to line)
      * @returns {Matrix}
      */
-    row_echelon(output = false, repeats = []) {
+    row_echelon(output = false, repeats = [], use_operate = 0b11) {
+
         let temp = deep_copy(this.data);
-        if (output) console.log(temp);
+        if (output) new Matrix(temp).show();
 
         temp.forEach((row, row_i) => {
 
             let now_lead = row.findIndex((e) => e != 0);
-            let now_ratio = 1 / (row[now_lead] ? row[now_lead] : 1);
 
-            row = row.map((e) => e * now_ratio);
-            repeats.forEach((mat) => {
-                if (output) console.log(mat);
-                if (mat.shape.some((e, i) => e != this.shape[i])) return;
-                mat.data[row_i] = mat.data[row_i].map((e) => e * now_ratio);
+            if (use_operate & 0b10) {
+                let now_ratio = 1 / (row[now_lead] ? row[now_lead] : 1);
+                if (output) console.log(fg_wrap(`row${row_i + 1} *= ${now_ratio}`));
 
-            });
+                row = row.map((e) => e * now_ratio);
+                temp[row_i] = row;
+                if (output) new Matrix(temp).show(bg_wrap_1);
 
-            temp[row_i] = row;
-            if (output && now_ratio != 1) console.log(temp);
+
+                repeats.forEach((mat) => {
+
+                    if (mat.shape.some((e, i) => e != this.shape[i])) return;
+
+                    mat.data[row_i] = mat.data[row_i].map((e) => e * now_ratio);
+                    if (output) mat.show(bg_wrap_2);
+
+                });
+                if (output) console.log();
+            }
+
+
+            if (!(use_operate & 0b01)) return;
 
             for (let o_row_i in new Array(temp.length).fill()) {
                 if (o_row_i == row_i) continue;
@@ -66,15 +81,21 @@ class Matrix {
                     let o_lead = o_row.findIndex((e) => e != 0);
                     if (now_lead >= o_lead) {
                         let ratio = o_row[now_lead] / (row[now_lead] ? row[now_lead] : o_row[now_lead]);
+                        if (output) console.log(fg_wrap(`row${parseInt(o_row_i) + 1} += (row${row_i + 1} * ${-ratio})`));
 
-                        temp[o_row_i] = new Matrix(temp[o_row_i]).add(new Matrix(row), -ratio).data;
+                        temp[o_row_i] = new Matrix(temp[o_row_i]).add(new Matrix(row).multi(-ratio)).data;
+                        if (output) new Matrix(temp).show(bg_wrap_1);
+
                         repeats.forEach((mat) => {
-                            if (output) console.log(mat);
                             if (mat.shape.some((e, i) => e != this.shape[i])) return;
-                            mat.data[o_row_i] = new Matrix(mat.data[o_row_i]).add(new Matrix(mat.data[row_i]), -ratio).data;
+
+                            mat.data[o_row_i] = new Matrix(mat.data[o_row_i]).add(new Matrix(mat.data[row_i]).multi(-ratio)).data;
+                            if (output) mat.show(bg_wrap_2);
+
                         });
 
-                        if (output) console.log(temp);
+                        if (output) console.log();
+
                     }
 
                 }
@@ -132,7 +153,7 @@ class Matrix {
      * @param {Matrix} matrix
      * @returns {Matrix}
      */
-    add(matrix, ratio = 1) {
+    add(matrix) {
 
         if (this.shape.some((e, i) => e !== matrix.shape[i])) {
             console.log("unmatched shape.");
@@ -142,45 +163,63 @@ class Matrix {
         return new Matrix(
             Matrix.dimension_recursive(
                 this.data,
-                (r, i) => r + Matrix.get_val_recursive(matrix.data, i) * ratio
+                (r, i) => r + Matrix.get_val_recursive(matrix.data, i)
             )
         );
     }
 
     /**
+     * @param {Number} matrix
      * @returns {Matrix}
      */
-    inverse() {
+    multi(val) {
+        return new Matrix(
+            Matrix.dimension_recursive(
+                this.data,
+                (r, i) => r * val
+            )
+        );
+    }
+
+    /**
+     * @param {boolean} output
+     * @returns {Matrix}
+     */
+    inverse(output = false) {
         if (this.shape.length != 2 || this.shape[0] != this.shape[1]) {
             console.log("not a square matrix.");
             return this;
         }
 
         let eye = Matrix.eye(this.shape[0]);
-        this.row_echelon(false, [eye]);
+        this.row_echelon(output, [eye]);
 
         return eye;
     }
 
     /**
-    * @returns {Matrix}
-    */
-    inverse_det_adj() {
+     * @param {boolean} output
+     * @returns {Matrix}
+     */
+    inverse_det_adj(output = false) {
         if (this.shape.length != 2 || this.shape[0] != this.shape[1]) {
             console.log("not a square matrix.");
             return this;
         }
 
-        let eye = Matrix.eye(this.shape[0]);
-        this.row_echelon(false, [eye]);
+        let det = new Detemerinant(this.data).get_val();
+        if (output) console.log(det);
 
-        return eye;
+        let adj = this.adjugate(output);
+
+        return adj.multi(1 / det);
     }
 
     /**
+     * @param {boolean} output
      * @returns {Matrix}
      */
-    adjugate() {
+    adjugate(output = false) {
         if (this.shape.length != 2 || this.shape[0] != this.shape[1]) {
             console.log("not a square matrix.");
             return this;
@@ -188,21 +227,23 @@ class Matrix {
 
         let temp = deep_copy(this.data);
 
-        temp.forEach((row, row_i) => {
-            row.forEach((col, col_i) => {
-                let algebraic_cofactor = new Detemerinant(deep_copy(temp)).del_row(row_i).del_col(col_i);
-                temp[row_i][col_i] = Math.pow(-1, row_i + col_i) * algebraic_cofactor.get_val();
-            });
-        });
+        Matrix.dimension_recursive(
+            deep_copy(this.data),
+            (r, i) => {
+                let [row_i, col_i] = i;
+                let algebraic_cofactor = new Detemerinant(deep_copy(this.data)).del_row(col_i).del_col(row_i);
 
+                temp[row_i][col_i] = Math.pow(-1, row_i + col_i) * algebraic_cofactor.get_val();
+                if (output) new Matrix(temp).show(bg_wrap_1);
+            }
+        );
 
         return new Matrix(temp);
     }
-
     /**
-     * 
-     */
-    show() {
+    * @param {(string)=>string} style
+    */
+    show(style = (str) => str) {
 
         let result = this.data.map((row) => row.map((e) => float_to_fraction(e)));
         let max_len = Math.max(...result.flat(Infinity).map((e) => e.length));
@@ -212,7 +253,7 @@ class Matrix {
             if (i == 0) wrap = "┌┐";
             else if (i == this.data.length - 1) wrap = "└┘";
 
-            console.log(`${wrap[0]} ${row.map((e) => `${" ".repeat(max_len - e.length)}${e}`).join(" ")} ${wrap[1]}`);
+            console.log(style(`${wrap[0]} ${row.map((e) => `${" ".repeat(max_len - e.length)}${e}`).join(" ")} ${wrap[1]}`));
         });
 
     }
@@ -245,7 +286,6 @@ class Matrix {
     }
 
     /**
-     * 
      * @param {any} ref 
      * @param {array} indexes 
      * @returns 
@@ -258,6 +298,7 @@ class Matrix {
                 ref
         );
     }
+
 }
 
 class Detemerinant extends Matrix {
@@ -275,7 +316,8 @@ class Detemerinant extends Matrix {
      * @returns {Detemerinant}
      */
     del_row(index) {
-        return new Detemerinant(this.data.splice(index, 1));
+        this.data.splice(index, 1);
+        return new Detemerinant(this.data);
     }
 
     /**
@@ -284,7 +326,8 @@ class Detemerinant extends Matrix {
      */
     del_col(index) {
         return new Detemerinant(this.data.map((row) => {
-            return row.splice(index, 1);
+            row.splice(index, 1);
+            return row;
         }));
     }
 
@@ -292,8 +335,8 @@ class Detemerinant extends Matrix {
      * @returns {Number}
      */
     get_val() {
-        let temp = deep_copy(this.data);
-        return 87;
+        let temp = this.row_echelon(false, [], 0b01).data;
+        return temp.reduce((s, e, i) => s * e[i], 1);
     }
 
 }
@@ -319,7 +362,7 @@ function float_to_fraction(num) {
     let deno = 1;
     let nume = deno * num;
     while ((nume % 1) > threshold && (1 - (nume % 1)) > threshold) {
-        nume = (deno++) * num;
+        nume = (++deno) * num;
     }
 
     nume = Math.round(deno * num);
@@ -343,12 +386,10 @@ function deep_copy(obj) {
 }
 
 let A = new Matrix([
-    [2325, -1251251334, 352, -141],
-    [-3, 8, 1215155, -123],
-    [2131, 247, -515, 15151123],
-    [5235, -355, 414, -12424155]
+    [1, -1, 2],
+    [-5, 7, -11],
+    [-2, 3, -5]
 ]);
-console.log(A.inverse().data);
-A.dot(A.inverse()).show();
-// A.inverse().show();
-A.show();
+
+A.inverse_det_adj().show();
+A.inverse().show();
