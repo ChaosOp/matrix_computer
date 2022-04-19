@@ -38,10 +38,11 @@ class Matrix {
     /**
      * @param {boolean} output 
      * @param {array<Matrix>} repeats
+     * @param {array.<((matrix: Matrix, index: number, ratio: number)=>boolean)>} rp_cond
      * @param {number} use_operate (multiple constant to line), (multiple line & add to line)
      * @returns {Matrix}
      */
-    row_echelon(output = false, repeats = [], use_operate = 0b11) {
+    row_echelon(output = false, repeats = [], rp_cond = [], use_operate = 0b11) {
 
         let temp = deep_copy(this.data);
         if (output) new Matrix(temp).show();
@@ -58,10 +59,11 @@ class Matrix {
                 temp[row_i] = row;
                 if (output) new Matrix(temp).show(bg_wrap_1);
 
+                repeats.forEach((mat, i) => {
 
-                repeats.forEach((mat) => {
 
                     if (mat.shape.some((e, i) => e != this.shape[i])) return;
+                    if (rp_cond[i]?.(mat, i, now_ratio) === false) return;
 
                     mat.data[row_i] = mat.data[row_i].map((e) => e * now_ratio);
                     if (output) mat.show(bg_wrap_2);
@@ -86,8 +88,10 @@ class Matrix {
                         temp[o_row_i] = new Matrix(temp[o_row_i]).add(new Matrix(row).multi(-ratio)).data;
                         if (output) new Matrix(temp).show(bg_wrap_1);
 
-                        repeats.forEach((mat) => {
+                        repeats.forEach((mat, i) => {
+
                             if (mat.shape.some((e, i) => e != this.shape[i])) return;
+                            if (rp_cond[i]?.(mat, i, ratio) === false) return;
 
                             mat.data[o_row_i] = new Matrix(mat.data[o_row_i]).add(new Matrix(mat.data[row_i]).multi(-ratio)).data;
                             if (output) mat.show(bg_wrap_2);
@@ -240,6 +244,40 @@ class Matrix {
 
         return new Matrix(temp);
     }
+
+    /**
+     * @param {boolean} output
+     * @returns {array<Matrix>}
+     */
+    elementary_products(output = false) {
+        if (this.shape.length != 2 || this.shape[0] != this.shape[1]) {
+            console.log("not a square matrix.");
+            return this;
+        }
+
+        let eyes = [Matrix.eye(this.shape[0])];
+
+        let index = 0;
+        let conds = [(mat, i) => {
+
+            if (index != i) return false;
+
+            eyes.push(Matrix.eye(this.shape[0]));
+
+            conds.push(conds[index]);
+            conds[index] = () => false;
+
+            index++;
+
+            return true;
+        }]
+
+        this.row_echelon(output, eyes, conds);
+        eyes.pop();
+
+        return eyes;
+    }
+
     /**
     * @param {(string)=>string} style
     */
@@ -335,7 +373,7 @@ class Detemerinant extends Matrix {
      * @returns {Number}
      */
     get_val() {
-        let temp = this.row_echelon(false, [], 0b01).data;
+        let temp = this.row_echelon(false, [], [], 0b01).data;
         return temp.reduce((s, e, i) => s * e[i], 1);
     }
 
@@ -386,10 +424,17 @@ function deep_copy(obj) {
 }
 
 let A = new Matrix([
-    [1, -1, 2],
-    [-5, 7, -11],
-    [-2, 3, -5]
+    [-2, 3],
+    [1, 0]
+
 ]);
 
-A.inverse_det_adj().show();
-A.inverse().show();
+let temp = A.elementary_products();
+temp.forEach((e) => {
+    e.show(bg_wrap_1);
+    e.inverse().show(bg_wrap_2);
+});
+
+let B = temp.shift().inverse();
+temp.forEach((e) => B = B.dot(e.inverse()));
+B.show(fg_wrap);
