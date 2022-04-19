@@ -61,8 +61,7 @@ class Matrix {
 
                 repeats.forEach((mat, i) => {
 
-
-                    if (mat.shape.some((e, i) => e != this.shape[i])) return;
+                    if (mat.shape[0] <= row_i) return;
                     if (rp_cond[i]?.(mat, i, now_ratio) === false) return;
 
                     mat.data[row_i] = mat.data[row_i].map((e) => e * now_ratio);
@@ -90,7 +89,7 @@ class Matrix {
 
                         repeats.forEach((mat, i) => {
 
-                            if (mat.shape.some((e, i) => e != this.shape[i])) return;
+                            if (mat.shape[0] <= row_i) return;
                             if (rp_cond[i]?.(mat, i, ratio) === false) return;
 
                             mat.data[o_row_i] = new Matrix(mat.data[o_row_i]).add(new Matrix(mat.data[row_i]).multi(-ratio)).data;
@@ -136,6 +135,11 @@ class Matrix {
 
         if (this.shape.length !== matrix.shape.length) {
             console.log("unmatched dimension.");
+            return;
+        }
+
+        if (this.shape[1] !== matrix.shape[0]) {
+            console.log("unmatched shape.");
             return;
         }
 
@@ -187,6 +191,16 @@ class Matrix {
 
     /**
      * @param {boolean} output
+     * @returns {array<Matrix>}
+     */
+    get_R_U(output = false) {
+        let eye = Matrix.eye(this.shape[0]);
+        let res = this.row_echelon(output, [eye], [() => true]);
+        return [res, eye];
+    }
+
+    /**
+     * @param {boolean} output
      * @returns {Matrix}
      */
     inverse(output = false) {
@@ -195,10 +209,7 @@ class Matrix {
             return this;
         }
 
-        let eye = Matrix.eye(this.shape[0]);
-        this.row_echelon(output, [eye]);
-
-        return eye;
+        return this.get_R_U(output)[1];
     }
 
     /**
@@ -250,8 +261,8 @@ class Matrix {
      * @returns {array<Matrix>}
      */
     elementary_products(output = false) {
-        if (this.shape.length != 2 || this.shape[0] != this.shape[1]) {
-            console.log("not a square matrix.");
+        if (this.shape.length != 2) {
+            console.log("not a 2d matrix.");
             return this;
         }
 
@@ -423,18 +434,26 @@ function deep_copy(obj) {
     return Object.assign(new obj.__proto__.constructor(), result);
 }
 
-let A = new Matrix([
-    [-2, 3],
-    [1, 0]
+// let A = new Matrix([
+//     [1, 2, 1],
+//     [5, 12, -1]
+// ]).get_R_U(true)[1];
 
+
+let A = new Matrix([
+    [2, 3],
+    [1, 2]
 ]);
 
-let temp = A.elementary_products();
+A.show();
+
+let temp = A.elementary_products(true);
 temp.forEach((e) => {
-    e.show(bg_wrap_1);
+    //e.show(bg_wrap_1);
     e.inverse().show(bg_wrap_2);
 });
 
 let B = temp.shift().inverse();
-temp.forEach((e) => B = B.dot(e.inverse()));
+temp.forEach((e) => { B = B.dot(e.inverse()); B.show(fg_wrap); });
 B.show(fg_wrap);
+

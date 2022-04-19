@@ -1,0 +1,155 @@
+:root {
+    --bg_color: #FFFFFF;
+    --btn_color: #000000;
+    --btn_bg_color: #e1e1eb;
+    --btn_dis_bg_color: #d5d5da;
+    --input_color: #000000;
+    --input_bg_color: #ffffff;
+    --cbbox_color: #3d3838;
+    --cbbox_bg_color: #ffffff;
+}
+
+div {
+    text-align: center;
+}
+
+input {
+    color: var(--input_color);
+    background-color: var(--input_bg_color);
+    width: 150px;
+    font-size: 16px;
+    cursor: text;
+    text-shadow: none;
+}
+
+
+button {
+    color: var(--btn_color);
+    background-color: var(--btn_bg_color);
+    border-color: white;
+    cursor: pointer;
+}
+
+button:disabled {
+    color: white;
+    background-color: var(--btn_dis_bg_color);
+    cursor: not-allowed;
+}
+
+
+button,
+input {
+    height: 30px;
+    border-radius: 10px;
+    outline: 0px;
+}
+
+.dark_mode {
+    --color: #FFFFFF;
+    --bg_color: #3e3e45;
+    --btn_color: #ffffff;
+    --btn_bg_color: #5c5c61;
+    --btn_dis_bg_color: #c6c6c6;
+    --input_color: #ffffff;
+    --input_bg_color: #414242;
+    --cbbox_color: #ffffff;
+    --cbbox_bg_color: #3d3838;
+}
+
+
+body {
+    background-color: var(--bg_color);
+    color: var(--color);
+}
+
+.main {
+    width: 600px;
+    margin: 120px auto 40px;
+}
+
+.line,
+.connect {
+    width: auto;
+    height: 50px;
+    margin: 12px 0px;
+}
+
+.title {
+    padding: 8px 0px;
+    margin: 12px 0px;
+    margin-left: 60px;
+    float: left;
+}
+
+.content {
+    padding: 0px 8px;
+    margin: 12px 0px;
+    margin-right: 60px;
+    float: right;
+}
+
+.err_msg {
+    color: red;
+    float: right;
+    padding-top: 18px;
+    padding-right: 8px;
+}
+
+#topic,
+#message {
+    font-size: 36px;
+}
+
+
+
+#connect_line {
+    width: 320px;
+    margin: auto;
+}
+
+#status_msg,
+#status_light {
+    margin-top: 22px;
+    float: left;
+}
+
+#delete,
+#current,
+#device_list {
+    margin: 12px 0px;
+}
+
+#delete {
+    width: auto;
+}
+
+.light {
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    float: left;
+}
+
+.light.green {
+    background: #63a303;
+}
+
+.light.red {
+    background: #f24949;
+}
+
+.light.yellow {
+    background: #e4b45b;
+}
+
+.green {
+    color: #63a303;
+}
+
+.red {
+    color: #f24949;
+}
+
+.yellow {
+    color: #e4b45b;
+}
