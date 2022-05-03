@@ -8,18 +8,34 @@
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link rel='stylesheet' type='text/css' media='screen'>
     <link rel='stylesheet' type='text/css' href='main.css'>
-    <script src='./main.js'></script>
 </head>
 
-<body>
-    <div class='line'>
-        <input type='text'>
-        <input type='text'>
+<body class="dark_mode">
+
+    <div id="matrix">
+        <div class='line'>
+            <input type='text' class="element">
+            <input type='text' class="element">
+        </div>
+        <div class='line'>
+            <input type='text' class="element">
+            <input type='text' class="element">
+        </div>
     </div>
     <div class='line'>
-        <input type='text'>
-        <input type='text'>
+        <div class='title'>Row count:</div>
+        <input class='content' type="number" id="row">
+        <button id="add_row">+</button>
+        <button id="sub_row">-</button>
     </div>
+    <div class='line'>
+        <div class='title'>Column count:</div>
+        <input class='content' type="number" id="col">
+        <button id="add_col">+</button>
+        <button id="sub_col">-</button>
+    </div>
+
+    <script src='./main.js'></script>
 </body>
 
 </html>

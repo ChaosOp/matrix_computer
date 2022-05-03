@@ -28,6 +28,7 @@ button {
     background-color: var(--btn_bg_color);
     border-color: white;
     cursor: pointer;
+    width: 33px;
 }
 
 button:disabled {
@@ -75,17 +76,18 @@ body {
 }
 
 .title {
+    width: 150px;
     padding: 8px 0px;
     margin: 12px 0px;
-    margin-left: 60px;
-    float: left;
+    display: inline-block;
+    text-align: left;
 }
 
 .content {
     padding: 0px 8px;
     margin: 12px 0px;
-    margin-right: 60px;
-    float: right;
+
+    
 }
 
 .err_msg {
@@ -123,33 +125,3 @@ body {
     width: auto;
 }
 
-.light {
-    border-radius: 50%;
-    width: 15px;
-    height: 15px;
-    float: left;
-}
-
-.light.green {
-    background: #63a303;
-}
-
-.light.red {
-    background: #f24949;
-}
-
-.light.yellow {
-    background: #e4b45b;
-}
-
-.green {
-    color: #63a303;
-}
-
-.red {
-    color: #f24949;
-}
-
-.yellow {
-    color: #e4b45b;
-}
