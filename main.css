@@ -17,6 +17,8 @@ input {
     color: var(--input_color);
     background-color: var(--input_bg_color);
     width: 150px;
+    margin-left: 5px;
+    margin-right: 5px;
     font-size: 16px;
     cursor: text;
     text-shadow: none;
@@ -68,8 +70,7 @@ body {
     margin: 120px auto 40px;
 }
 
-.line,
-.connect {
+.line {
     width: auto;
     height: 50px;
     margin: 12px 0px;
@@ -88,35 +89,8 @@ body {
     margin: 12px 0px;
 }
 
-.err_msg {
-    color: red;
-    float: right;
-    padding-top: 18px;
-    padding-right: 8px;
-}
-
-#topic,
-#message {
-    font-size: 36px;
-}
-
-
-
-#connect_line {
-    width: 320px;
-    margin: auto;
-}
-
-#status_msg,
-#status_light {
-    margin-top: 22px;
-    float: left;
-}
-
-#delete,
-#current,
-#device_list {
-    margin: 12px 0px;
+#matrix {
+    margin-top: 75px;
 }
 
 #delete {
