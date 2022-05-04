@@ -86,8 +86,6 @@ body {
 .content {
     padding: 0px 8px;
     margin: 12px 0px;
-
-    
 }
 
 .err_msg {
@@ -124,4 +122,3 @@ body {
 #delete {
     width: auto;
 }
-
