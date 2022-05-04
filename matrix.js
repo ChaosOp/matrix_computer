@@ -393,6 +393,16 @@ class Matrix {
     }
 
     /**
+     * @param {Number} row
+     * @param {Number} col
+     * @returns {Matrix}
+     */
+    static zero(row, col) {
+        return new Matrix(new Array(row).fill()
+            .map((e, row_i) => new Array(col).fill(0)));
+    }
+
+    /**
      * @param {Any} ref 
      * @param {(ref, indexes)=>ref} operate 
      * @param {Number} depth
@@ -541,20 +551,20 @@ function deep_copy(obj) {
 // console.log(new Ex_num("2x^3y^87"));
 
 
-let A = new Matrix([
-    [2, 2, -2, 4, 2],
-    [1, -1, 0, 2, 1],
-    [3, 1, -2, 6, 3],
-    [1, 3, -2, 2, 1]
-]);
+// let A = new Matrix([
+//     [2, 2, -2, 4, 2],
+//     [1, -1, 0, 2, 1],
+//     [3, 1, -2, 6, 3],
+//     [1, 3, -2, 2, 1]
+// ]);
 
 
-let [P, L, U] = A.get_PLU(true);
+// let [P, L, U] = A.get_PLU(true);
 
-P.show();
-L.show();
-U.show();
+// P.show();
+// L.show();
+// U.show();
 
-L.dot(U).show();
+// L.dot(U).show();
 
 
