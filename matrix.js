@@ -28,6 +28,7 @@ class Ex_num {
 }
 
 let color_wrap = (text, ground, r, g, b) => `\x1b[${ground};2;${r};${g};${b}m${text}\x1b[0m`;
+color_wrap = (text, ground, r, g, b) => text;
 let fg_wrap = (text) => color_wrap(text, 38, 246, 201, 255);
 let bg_wrap_1 = (text) => color_wrap(text, 48, 111, 79, 117);
 let bg_wrap_2 = (text) => color_wrap(text, 48, 101, 43, 112);
@@ -102,6 +103,8 @@ class Matrix {
                 if (o_row) {
 
                     let o_lead = o_row.findIndex((e) => e != 0);
+                    if (o_lead == -1) continue;
+
                     let ratio = 1;
                     let do_operate = () => { };
                     let op = 0b000;
@@ -120,6 +123,7 @@ class Matrix {
                     else if ((now_lead >= o_lead) && (use_operate & 0b001)) {
                         ratio = o_row[now_lead] / (row[now_lead] ? row[now_lead] : o_row[now_lead]);
                         do_operate = (rows) => rows[o_row_i] = new Matrix(rows[o_row_i]).add(new Matrix(rows[row_i]).multi(-ratio)).data;
+
                         op = 0b001;
                         msg += `+= (row${row_i + 1} * ${-ratio})`;
                     }
@@ -376,9 +380,9 @@ class Matrix {
             if (i == 0) wrap = "┌┐";
             else if (i == this.data.length - 1) wrap = "└┘";
 
-            console.log(style(`${wrap[0]} ${row.map((e) => `${" ".repeat(max_len - e.length)}${e}`).join(" ")} ${wrap[1]}`));
+            console.log(style(`${wrap[0]} ${row.map((e) => `${" ".repeat(Math.floor((max_len - e.length)))}${e}`).join(" ")} ${wrap[1]}`));
         });
-
+        console.log();
     }
 
 
@@ -537,7 +541,7 @@ function deep_copy(obj) {
     let result = {};
 
     for (let key of Object.keys(obj)) {
-        if (typeof (obj[key]) === 'object') {
+        if (typeof (obj[key]) === 'object' && obj[key] != null) {
             result[key] = Object.assign(new obj[key].__proto__.constructor(), deep_copy(obj[key]));
         }
         else {

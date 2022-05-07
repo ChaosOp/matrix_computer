@@ -9,9 +9,6 @@
     --cbbox_bg_color: #ffffff;
 }
 
-div {
-    text-align: center;
-}
 
 input {
     color: var(--input_color);
@@ -41,6 +38,7 @@ button:disabled {
 
 
 button,
+select,
 input {
     height: 30px;
     border-radius: 10px;
@@ -59,6 +57,12 @@ input {
     --cbbox_bg_color: #3d3838;
 }
 
+select {
+    color: var(--cbbox_color);
+    background-color: var(--cbbox_bg_color);
+    width: 170px;
+}
+
 
 body {
     background-color: var(--bg_color);
@@ -71,6 +75,9 @@ body {
 }
 
 .line {
+    justify-content: center;
+    display: flex;
+    flex-direction: row;
     width: auto;
     height: 50px;
     margin: 12px 0px;
@@ -80,7 +87,6 @@ body {
     width: 150px;
     padding: 8px 0px;
     margin: 12px 0px;
-    display: inline-block;
     text-align: left;
 }
 
@@ -91,6 +97,11 @@ body {
 
 #matrix {
     margin-top: 75px;
+}
+
+#output {
+    width: fit-content;
+    margin-left: 40%;
 }
 
 #delete {

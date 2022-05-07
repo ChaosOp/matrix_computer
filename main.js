@@ -1,43 +1,164 @@
 window.ls = ls_proxy(localStorage);
-const mat = get("#matrix")[0];
 
-const base_element = new_node("input", {
-    className: "element",
-    type: "text"
-});
-add_e_event(base_element);
+const mat = get("#matrix");
+mat.forEach((e, i) => e.name = i);
 
-const base_row = new_node("div", {
-    className: "line",
-    children: [base_element.cloneNode(true)]
-});
+const _log = console.log.bind(console);
+console.log = function () {
+
+    let str_result = Object.values(arguments)
+        .map((e) => {
+            if (Array.isArray(e)) {
+                return `[${e}]`;
+            }
+            else if (typeof (e) === "object") {
+                let r = e;
+                try {
+                    r = JSON.stringify(e);
+                }
+                catch { }
+                return r;
+            }
+            else {
+                return e;
+            }
+        })
+        .join();
+
+    get("#output")[0].appendChild(new_node("pre", {
+        innerHTML: `${str_result}` || `<br></br>`,
+        style: {
+            textAlignLast: "justify",
+            textAlign: "justify"
+        }
+    }));
+
+    _log.apply(this, arguments);
+    return str_result;
+};
 
 
 
 init();
 
 function init() {
+    get("#func").forEach((parent, i) => {
+        parent.name = i;
 
-    load_matrix();
-
-    ["row", "col"].forEach((line_type, i) => {
-
-        let line = get(`#${line_type}`)[0];
-
-        ["add", "sub"].forEach((mod_type, mod_i) => {
-            get(`#${mod_type}_${line_type}`)[0].addEventListener("click", () => {
-                line.value = parseInt(line.value) + (mod_i ? -1 : 1);
-                line.dispatchEvent(new Event("change"));
-            });
-        });
-
-        line.value = ls.shape[i];
-        line.addEventListener("change", (e) => {
-            modify_matrix(e, i);
-        });
+        init_modify_matrix_btn(parent);
+        init_func_list(parent);
+        load_matrix(parent.name);
 
     });
+}
 
+function init_modify_matrix_btn(parent) {
+
+
+    let desc = ["Row", "Column"];
+    ["row", "col"].forEach((line_type, i) => {
+
+        let btn_line = new_node("div", {
+            className: "line"
+        });
+
+        let btn_title = new_node("div", {
+            className: "title",
+            innerText: `${desc[i]} count:`
+        });
+
+        let btn_input = new_node("input", {
+            className: "content",
+            type: "number",
+            id: line_type
+        });
+        btn_input.addEventListener("change", (e) => {
+            modify_matrix(mat[parent.name], e, i);
+        });
+
+        [
+            btn_title,
+            btn_input
+        ].forEach((e) => btn_line.appendChild(e));
+
+
+
+        let mod_desc = ["+", "-"];
+        ["add", "sub"].forEach((mod_type, mod_i) => {
+            let btn_moder = new_node("button", {
+                id: `${mod_type}_${line_type}`,
+                innerText: mod_desc[mod_i],
+                className: "content"
+            });
+
+            btn_moder.addEventListener("click", () => {
+                btn_input.value = parseInt(btn_input.value) + (mod_i ? -1 : 1);
+                btn_input.dispatchEvent(new Event("change"));
+            });
+
+            btn_line.appendChild(btn_moder);
+        });
+
+        parent.appendChild(btn_line);
+    });
+
+}
+
+function init_func_list(parent) {
+
+    let func_list = [
+        "row_echelon",
+        "T",
+        "dot",
+        "get_PLU",
+        "inverse",
+        "elementary_products"
+    ];
+
+    let cbbox_line = new_node("div", {
+        className: "line"
+    });
+
+    let cbbox_title = new_node("div", {
+        className: "title",
+        innerText: `Wat to do:`
+    });
+
+    let cbbox = new_node("select", {
+        className: "content",
+        id: "func_selected",
+        options: func_list.map((val) => new_node("option", { innerText: val }))
+    });
+
+    let cbbox_btn_equal = new_node("button", {
+        id: `operate`,
+        innerText: "＝",
+        className: "content"
+    });
+    cbbox_btn_equal.addEventListener("click", () => {
+        let opt = cbbox.selectedOptions[0].innerText;
+        [new Matrix(ls[`matrix${parent.name}`])[opt](true)]
+            .flat(Infinity)
+            .forEach((m) => m.show());
+    });
+
+    let cbbox_btn_clear = new_node("button", {
+        id: `operate`,
+        innerText: "C",
+        className: "content"
+    });
+    cbbox_btn_clear.addEventListener("click", () => {
+        get("#output")[0].replaceWith(get("#output")[0].cloneNode());
+    });
+
+    [
+        cbbox_title,
+        cbbox,
+        cbbox_btn_equal,
+        cbbox_btn_clear
+    ].forEach((node) => cbbox_line.appendChild(node));
+
+    parent.appendChild(cbbox_line);
 }
 
 /**
@@ -144,10 +265,11 @@ function ls_proxy(obj, keys = []) {
 }
 
 /**
+ * @param {Number} index
  * @param {String} selector 
  */
-function get_input_val(selector) {
-    return parseInt(get(selector)[0].value);
+function get_input_val(index = 0, selector) {
+    return parseInt(get(selector)[index].value);
 }
 
 
@@ -157,7 +279,7 @@ function get_input_val(selector) {
  * @param {Number} axis 
  * @param {Boolean} auto_save
  */
-function modify_matrix(event, axis, auto_save = true) {
+function modify_matrix(mat, event, axis, auto_save = true) {
 
     let count = Math.max(event.target.value, 1);
     event.target.value = count;
@@ -175,53 +297,65 @@ function modify_matrix(event, axis, auto_save = true) {
 
     }, axis);
 
-    loop_in_matrix((e, r_i, c_i, arr) => {
-        e.style.width = `${Math.max(Math.min(1000 / arr.length, 100), 3)}px`;
-        e.value = ls.matrix?.[r_i]?.[c_i] || 0;
+    loop_in_matrix(mat.name, (e, r_i, c_i, arr) => {
+        e.style.width = `${Math.max(Math.min(500 / arr.length, 100), 3)}px`;
+        e.value = ls[`matrix${mat.name}`]?.[r_i]?.[c_i] || 0;
         e.parentNode.pos = r_i;
         e.pos = c_i;
-        add_e_event(e);
+        add_e_event(mat.name, e);
     });
 
-    if (auto_save) save_matrix(get_input_val("#row"), get_input_val("#col"));
+    if (auto_save) {
+        save_matrix(
+            mat.name,
+            get_input_val(mat.name, `#row`),
+            get_input_val(mat.name, `#col`)
+        );
+    }
 }
 
 
 /**
+ * @param {Number} name
  * @param {Number} row 
  * @param {Number} col 
  */
-function save_matrix(row, col) {
+function save_matrix(name, row, col) {
 
     let new_mat = Matrix.zero(row, col).data;
-    loop_in_matrix((e, r_i, c_i) => {
-        new_mat[r_i][c_i] = e.value;
+    loop_in_matrix(name, (e, r_i, c_i) => {
+        new_mat[r_i][c_i] = parseInt(e.value);
     });
 
-    ls.matrix = new_mat;
-    ls.shape = new Matrix(new_mat).shape;
+    ls[`matrix${name}`] = new_mat;
+    ls[`shape${name}`] = new Matrix(new_mat).shape;
 }
 
-function load_matrix() {
-    if (!Array.isArray(ls.matrix)) save_matrix(2, 2);
+/**
+ * @param {Number} name 
+ */
+function load_matrix(name) {
+    if (!Array.isArray(ls[`matrix${name}`]) || !Array.isArray(ls[`shape${name}`])) save_matrix(name, 2, 2);
 
-    ["row", "col"].forEach((type, i) => get(`#${type}`)[0].value = ls.shape[i]);
+    ["row", "col"].forEach((type, i) => get(`#${type}`)[0].value = ls[`shape${name}`][i]);
 
-    new Array(2).fill().forEach((e, i) => modify_matrix({
+    new Array(2).fill().forEach((e, i) => modify_matrix(mat[name], {
         target: {
-            value: new Matrix(ls.matrix).shape[i]
+            value: new Matrix(ls[`matrix${name}`]).shape[i]
         }
     }, i, false));
 
-    save_matrix(...ls.shape);
+    save_matrix(name, ...ls[`shape${name}`]);
 
 }
 
 /**
+ * @param {Number} name 
  * @param {Function} operate 
  */
-function loop_in_matrix(operate) {
-    dimension_recursive(mat.children, (r, r_i) => {
+function loop_in_matrix(name, operate) {
+
+    dimension_recursive(mat[name].children, (r, r_i) => {
         Array.from(r).forEach((e, c_i, arr) => {
             operate(e, r_i, c_i, arr);
         });
@@ -229,18 +363,20 @@ function loop_in_matrix(operate) {
 }
 
 /**
+ * @param {Number} name 
  * @param {HTMLElement} e 
  */
-function add_e_event(e) {
-    e.addEventListener("change", modify_element);
+function add_e_event(name, e) {
+    e.addEventListener("change", (e) => modify_element(name, e));
 }
 
 /**
+ * @param {Number} name 
  * @param {Event} event
  */
-function modify_element(event) {
+function modify_element(name, event) {
     let e = event.target;
-    let mat = ls.matrix;
-    mat[e.parentNode.pos][e.pos] = e.value;
-    ls.matrix = mat;
+    let mat = ls[`matrix${name}`];
+    mat[e.parentNode.pos][e.pos] = parseInt(e.value);
+    ls[`matrix${name}`] = mat;
 }
