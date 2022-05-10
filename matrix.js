@@ -182,9 +182,10 @@ class Matrix {
 
     /**
      * @param {Matrix} matrix 
+     * @param {Boolean} output
      * @returns {Matrix}
      */
-    dot(matrix) {
+    dot(matrix, output = false) {
 
         if (this.shape.length !== matrix.shape.length) {
             console.log("unmatched dimension.");
@@ -206,27 +207,36 @@ class Matrix {
             }
         }
 
-        return new Matrix(result);
+        result = new Matrix(result);
+
+        if (output) result.show();
+
+        return result;
     }
 
 
     /**
      * @param {Matrix} matrix
+     * @param {Boolean} output
      * @returns {Matrix}
      */
-    add(matrix) {
+    add(matrix, output = false) {
 
         if (this.shape.some((e, i) => e !== matrix.shape[i])) {
             console.log("unmatched shape.");
             return this;
         }
 
-        return new Matrix(
+        let result = new Matrix(
             Matrix.dimension_recursive(
                 this.data,
                 (r, i) => r + Matrix.get_val_recursive(matrix.data, i)
             )
         );
+
+        if (output) result.show();
+
+        return result;
     }
 
     /**
@@ -403,7 +413,7 @@ class Matrix {
      */
     static zero(row, col) {
         return new Matrix(new Array(row).fill()
-            .map((e, row_i) => new Array(col).fill(0)));
+            .map(() => new Array(col).fill(0)));
     }
 
     /**

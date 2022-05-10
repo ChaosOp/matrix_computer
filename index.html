@@ -9,38 +9,32 @@
     <link rel='stylesheet' type='text/css' media='screen'>
     <link rel='stylesheet' type='text/css' href='main.css'>
     <script src='./matrix.js'></script>
+    <script src='./base_dom.js'></script>
+    <script src='./base_data.js'></script>
 </head>
 
 <body class="dark_mode">
 
 
     <div id="matrix">
-        <div class='line'>
-            <input type='text' class="element">
+
+        <button class="delete_matrix">delete A</button>
+
+        <div class="line">A</div>
+
+        <div class="content">
+            <div class='line'>
+                <input type='text' class="element">
+            </div>
         </div>
-    </div>
 
+        <div id="func"></div>
 
-    <div id="func">
-
-    </div>
-
-
-    <div id="matrix">
-        <div class='line'>
-            <input type='text' class="element">
-        </div>
-    </div>
-
-
-    <div id="func">
+        <div id="output"></div>
 
     </div>
 
-
-    <div id="output">
-
-    </div>
+    <button id="add_matrix">add new matrix</button>
 
     <script src='./main.js'></script>
 </body>

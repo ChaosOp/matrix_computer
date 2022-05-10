@@ -95,6 +95,14 @@ body {
     margin: 12px 0px;
 }
 
+.delete_matrix {
+    position: relative;
+    margin-left: 60%;
+    height: auto;
+    width: auto;
+    color: red;
+}
+
 #matrix {
     margin-top: 75px;
 }
@@ -106,4 +114,20 @@ body {
 
 #delete {
     width: auto;
+}
+
+#add_matrix {
+    position: fixed;
+    bottom: 2%;
+    right: 2%;
+    width: auto;
+    height: auto;
+    font-size: x-large;
+    transition: opacity 1s;
+    opacity: 1;
+}
+
+#add_matrix:hover {
+    transition: opacity 1s;
+    opacity: 0.2;
 }
